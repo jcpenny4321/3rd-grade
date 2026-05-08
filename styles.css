@@ -366,6 +366,89 @@ body {
 /* confetti canvas */
 #confetti-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 199; }
 
+/* ── INCORRECT REVIEW MODAL ── */
+.review-overlay {
+  display: none; position: fixed; inset: 0; z-index: 300;
+  background: rgba(45,26,0,0.8);
+  align-items: center; justify-content: center;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.review-overlay.show {
+  display: flex;
+  animation: fadeIn 0.3s both;
+}
+.review-modal {
+  background: var(--white);
+  border-radius: 24px;
+  padding: 2rem 2rem 1.5rem;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  max-width: 380px; width: 90%;
+  animation: popUp 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+.review-header {
+  font-family: 'Nunito', sans-serif; font-weight: 900;
+  font-size: 1.2rem; color: var(--red);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  margin-bottom: 1rem;
+}
+.review-question {
+  font-family: 'Nunito', sans-serif; font-weight: 900;
+  font-size: clamp(2rem, 8vw, 2.8rem);
+  color: var(--ink);
+  margin-bottom: 1.2rem;
+  line-height: 1.1;
+  word-wrap: break-word;
+}
+.review-your-answer {
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+  margin-bottom: 1.2rem;
+}
+.review-label {
+  font-family: 'Nunito Sans', sans-serif; font-weight: 700;
+  font-size: 0.95rem; color: var(--ink2);
+}
+.review-wrong-val {
+  font-family: 'Nunito', sans-serif; font-weight: 900;
+  font-size: 1.4rem; color: var(--red);
+  background: #ffe0e0; border-radius: 8px;
+  padding: 0.15rem 0.6rem;
+}
+.review-correct-answer {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 0.3rem; margin-bottom: 1.5rem;
+}
+.review-correct-val {
+  font-family: 'Nunito', sans-serif; font-weight: 900;
+  font-size: clamp(2.5rem, 10vw, 3.5rem);
+  color: var(--green-dark);
+  background: #d4f5e2;
+  border: 3px solid var(--green);
+  border-radius: 14px;
+  padding: 0.3rem 1.2rem;
+  box-shadow: 0 0 20px rgba(46,204,113,0.25);
+  line-height: 1.2;
+}
+.review-continue-btn {
+  width: 100%; padding: 1rem;
+  background: linear-gradient(135deg, var(--orange), #FF9A3C);
+  border: none; border-radius: 14px;
+  font-family: 'Nunito', sans-serif; font-weight: 900;
+  font-size: 1.2rem; color: var(--white);
+  cursor: pointer;
+  box-shadow: 0 5px 0 var(--orange-dark);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.review-continue-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 var(--orange-dark);
+}
+.review-continue-btn:focus-visible {
+  outline: 3px solid var(--orange);
+  outline-offset: 3px;
+}
+
 /* ── TIMER ── */
 .timer-row {
   display: flex; align-items: center; justify-content: space-between;

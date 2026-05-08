@@ -174,6 +174,16 @@ function rippleBtn(btn) {
 // keyboard
 document.addEventListener('keydown', e => {
   if (AC.state === 'suspended') AC.resume();
+
+  // When review modal is open, only Enter/Space closes it
+  if (reviewModalOpen) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      closeReviewModal();
+    }
+    return;
+  }
+
   if (e.key >= '0' && e.key <= '9') pressNum(e.key);
   else if (e.key === 'Backspace') pressClear();
   else if (e.key === 'Enter') pressEnter();
@@ -227,12 +237,7 @@ function submitAnswer() {
     soundWrong();
     sv.className = 'screen-value wrong';
     banner.className = 'answer-banner wrong';
-    banner.innerHTML = `❌ The answer is <strong>${currentQ.a} × ${currentQ.b} = ${currentQ.answer}</strong>`;
-
-    // show correct answer in problem area
-    const pa = document.getElementById('prob-answer');
-    pa.textContent = currentQ.answer;
-    pa.style.opacity = 1;
+    banner.innerHTML = `❌ Incorrect`;
 
     // shake game card
     const gc = document.getElementById('game-card');
@@ -246,16 +251,54 @@ function submitAnswer() {
 
   updateStats();
 
-  // next question after delay
+  if (isCorrect) {
+    // auto-advance after short delay for correct answers
+    setTimeout(() => {
+      questionIndex++;
+      if (questionIndex > SET_SIZE) {
+        showEndScreen();
+      } else {
+        currentQ = questionQueue[questionIndex - 1];
+        renderQuestion();
+      }
+    }, 900);
+  } else {
+    // open review modal — user must press Continue
+    openReviewModal(currentQ, currentInput);
+  }
+}
+
+// ── INCORRECT REVIEW MODAL ──────────────────────────────────
+let reviewModalOpen = false;
+
+function openReviewModal(q, userAnswer) {
+  reviewModalOpen = true;
+  document.getElementById('review-question').textContent = `${q.a} × ${q.b}`;
+  document.getElementById('review-user-answer').textContent = userAnswer;
+  document.getElementById('review-correct-answer').textContent = q.answer;
+
+  const overlay = document.getElementById('review-overlay');
+  overlay.classList.add('show');
+
+  // focus the continue button for keyboard accessibility
   setTimeout(() => {
-    questionIndex++;
-    if (questionIndex > SET_SIZE) {
-      showEndScreen();
-    } else {
-      currentQ = questionQueue[questionIndex - 1];
-      renderQuestion();
-    }
-  }, isCorrect ? 900 : 1600);
+    document.getElementById('review-continue-btn').focus();
+  }, 100);
+}
+
+function closeReviewModal() {
+  if (!reviewModalOpen) return;
+  reviewModalOpen = false;
+  document.getElementById('review-overlay').classList.remove('show');
+
+  // advance to next question
+  questionIndex++;
+  if (questionIndex > SET_SIZE) {
+    showEndScreen();
+  } else {
+    currentQ = questionQueue[questionIndex - 1];
+    renderQuestion();
+  }
 }
 
 // ── END SCREEN ───────────────────────────────────────────────

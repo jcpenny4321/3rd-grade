@@ -102,6 +102,23 @@
   </div>
 </div>
 
+<!-- INCORRECT ANSWER REVIEW MODAL -->
+<div class="review-overlay" id="review-overlay" role="dialog" aria-modal="true" aria-label="Incorrect answer review">
+  <div class="review-modal" id="review-modal">
+    <div class="review-header">Incorrect Answer</div>
+    <div class="review-question" id="review-question">12 × 7</div>
+    <div class="review-your-answer">
+      <span class="review-label">Your Answer:</span>
+      <span class="review-wrong-val" id="review-user-answer">72</span>
+    </div>
+    <div class="review-correct-answer">
+      <span class="review-label">Correct Answer:</span>
+      <div class="review-correct-val" id="review-correct-answer">84</div>
+    </div>
+    <button class="review-continue-btn" id="review-continue-btn" onclick="closeReviewModal()">Continue</button>
+  </div>
+</div>
+
 <!-- END SCREEN -->
 <div class="end-overlay" id="end-overlay">
   <div class="end-card">
