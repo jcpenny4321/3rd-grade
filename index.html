@@ -1,0 +1,226 @@
+<!-- Tells the browser "this is a modern HTML page" -->
+<!DOCTYPE html>
+<!-- Sets the page language to English -->
+<html lang="en">
+<head>
+  <!-- Makes sure special characters (like emojis) show up correctly -->
+  <meta charset="UTF-8">
+  <!-- Makes the page fit perfectly on phones and tablets, not just big screens -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- The name shown on the browser tab -->
+  <title>Times Table Blast! 🚀</title>
+
+  <!-- Loads the two fancy fonts we use from Google -->
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <!-- Loads our CSS file that controls how everything looks -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- An invisible box that holds the floating background star emojis -->
+  <div class="stars" id="stars"></div>
+
+  <!-- An invisible drawing surface used to animate the confetti when you win -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- The main wrapper that keeps all the game content centred on the page -->
+  <div class="app">
+
+    <!-- The title bar at the top with the game logo -->
+    <div class="header">
+      <!-- "Blast!" is wrapped in a span so CSS can colour it differently -->
+      <div class="logo">⚡ Times Table <span>Blast!</span></div>
+    </div>
+
+    <!-- ── TABLE SELECTOR ── -->
+    <!-- The white card where you choose which times tables to practice -->
+    <div class="selector-card">
+
+      <!-- Small label above the number buttons -->
+      <div class="selector-label">Choose your tables</div>
+
+      <!-- JavaScript fills this grid with buttons 1–12 automatically -->
+      <div class="table-grid" id="table-grid"></div>
+
+      <!-- Three quick-select buttons below the grid -->
+      <div class="selector-actions">
+        <button class="link-btn" onclick="selectAll()">Select All</button>
+        <button class="link-btn" onclick="clearAll()">Clear All</button>
+        <button class="link-btn" onclick="selectHard()">Hard Mode (6–12)</button>
+      </div>
+    </div>
+
+    <!-- ── STATS ── -->
+    <!-- The row of three badges showing Score, Streak, and Correct count -->
+    <div class="stats-row">
+
+      <!-- Score badge — JavaScript updates the number inside -->
+      <div class="stat-pill">
+        <div class="stat-val" id="score-val">0</div>
+        <div class="stat-lbl">Score</div>
+      </div>
+
+      <!-- Streak badge — gets a fire gradient background via CSS -->
+      <div class="stat-pill streak-pill">
+        <div class="stat-val" id="streak-val">🔥 0</div>
+        <div class="stat-lbl">Streak</div>
+      </div>
+
+      <!-- Correct count badge — shows how many you got right out of 15 -->
+      <div class="stat-pill">
+        <div class="stat-val" id="correct-val">0/15</div>
+        <div class="stat-lbl">Correct</div>
+      </div>
+    </div>
+
+    <!-- ── PROGRESS BAR ── -->
+    <!-- The outer grey track the progress bar sits inside -->
+    <div class="progress-wrap">
+      <!-- The coloured fill — JavaScript changes its width as you answer questions -->
+      <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+    </div>
+
+    <!-- ── GAME CARD ── -->
+    <!-- The main white card holding the question, calculator, and banner -->
+    <div class="game-card" id="game-card">
+
+      <!-- Thin strip at the top showing which question you're on -->
+      <div class="timer-row">
+        <span class="q-counter" id="q-counter">Question 1 of 15</span>
+      </div>
+
+      <!-- ── QUESTION AREA ── -->
+      <!-- The orange section displaying the maths problem (e.g. 7 × 8 = ?) -->
+      <div class="problem-area" id="problem-area">
+        <div class="problem-num" id="num-a">7</div>   <!-- First number -->
+        <div class="problem-op">×</div>               <!-- Multiplication sign -->
+        <div class="problem-num" id="num-b">8</div>   <!-- Second number -->
+        <div class="problem-op problem-eq">=</div>     <!-- Equals sign -->
+        <!-- The answer slot — hidden (opacity:0) until needed -->
+        <div class="problem-num" id="prob-answer" style="opacity:0">?</div>
+      </div>
+
+      <!-- ── CALCULATOR ── -->
+      <!-- The dark retro number pad where you type your answer -->
+      <div class="calculator">
+
+        <!-- The glowing green screen showing what you've typed -->
+        <div class="calc-screen">
+          <!-- Small message that pops up for streak bonuses, etc. -->
+          <div class="feedback-text" id="feedback-text"></div>
+          <!-- The digits you've typed so far (starts as an underscore) -->
+          <div class="screen-value" id="screen-value">_</div>
+          <!-- The blinking cursor line -->
+          <div class="screen-cursor" id="cursor"></div>
+        </div>
+
+        <!-- The number pad — each button calls a JavaScript function when clicked -->
+        <div class="calc-grid">
+          <!-- Row 1: 7, 8, 9 -->
+          <button class="calc-btn" data-val="7" onclick="pressNum('7')">7</button>
+          <button class="calc-btn" data-val="8" onclick="pressNum('8')">8</button>
+          <button class="calc-btn" data-val="9" onclick="pressNum('9')">9</button>
+          <!-- Row 2: 4, 5, 6 -->
+          <button class="calc-btn" data-val="4" onclick="pressNum('4')">4</button>
+          <button class="calc-btn" data-val="5" onclick="pressNum('5')">5</button>
+          <button class="calc-btn" data-val="6" onclick="pressNum('6')">6</button>
+          <!-- Row 3: 1, 2, 3 -->
+          <button class="calc-btn" data-val="1" onclick="pressNum('1')">1</button>
+          <button class="calc-btn" data-val="2" onclick="pressNum('2')">2</button>
+          <button class="calc-btn" data-val="3" onclick="pressNum('3')">3</button>
+          <!-- Row 4: C (clear/backspace), 0 (double wide), Enter -->
+          <button class="calc-btn btn-clear" onclick="pressClear()">C</button>
+          <button class="calc-btn btn-zero"  onclick="pressNum('0')">0</button>
+          <button class="calc-btn btn-enter" onclick="pressEnter()">✓ Enter</button>
+        </div>
+      </div>
+
+      <!-- The message bar below the calculator ("Type your answer and press Enter!") -->
+      <div class="answer-banner" id="answer-banner">Start typing your answer! 🎯</div>
+    </div>
+
+  </div><!-- end .app -->
+
+  <!-- ── INCORRECT REVIEW MODAL ── -->
+  <!-- Pop-up that appears when you get an answer wrong, showing the correct answer -->
+  <!-- role/aria tags help screen readers describe this as a dialog box -->
+  <div class="review-overlay" id="review-overlay" role="dialog" aria-modal="true" aria-label="Incorrect answer review">
+    <div class="review-modal" id="review-modal">
+
+      <!-- Red heading at the top of the pop-up -->
+      <div class="review-header">Incorrect Answer</div>
+
+      <!-- Shows the question you got wrong (e.g. "12 × 7") -->
+      <div class="review-question" id="review-question">12 × 7</div>
+
+      <!-- Shows what you typed (the wrong answer) in a red bubble -->
+      <div class="review-your-answer">
+        <span class="review-label">Your Answer:</span>
+        <span class="review-wrong-val" id="review-user-answer">72</span>
+      </div>
+
+      <!-- Shows the correct answer in a big green bubble -->
+      <div class="review-correct-answer">
+        <span class="review-label">Correct Answer:</span>
+        <div class="review-correct-val" id="review-correct-answer">84</div>
+      </div>
+
+      <!-- Button to close the pop-up and move to the next question -->
+      <button class="review-continue-btn" id="review-continue-btn" onclick="closeReviewModal()">Continue</button>
+    </div>
+  </div>
+
+  <!-- ── END SCREEN ── -->
+  <!-- Dark overlay that covers the whole screen when all 15 questions are done -->
+  <div class="end-overlay" id="end-overlay">
+    <div class="end-card">
+
+      <!-- Big emoji at the top (🏆, 🎉, or 💪 depending on your score) -->
+      <div class="end-emoji" id="end-emoji">🏆</div>
+
+      <!-- Title like "Perfect Score!" or "Keep Practicing!" -->
+      <div class="end-title" id="end-title">Awesome!</div>
+
+      <!-- Star rating (⭐, ⭐⭐, or ⭐⭐⭐) -->
+      <div class="end-stars" id="end-stars">⭐⭐⭐</div>
+
+      <!-- 2×2 grid of final stat boxes -->
+      <div class="end-stats">
+
+        <!-- Your total points -->
+        <div class="end-stat">
+          <div class="end-stat-val" id="end-score">0</div>
+          <div class="end-stat-lbl">Final Score</div>
+        </div>
+
+        <!-- How many questions you got right out of 15 -->
+        <div class="end-stat">
+          <div class="end-stat-val" id="end-correct">0/15</div>
+          <div class="end-stat-lbl">Correct</div>
+        </div>
+
+        <!-- Your longest streak of correct answers in a row -->
+        <div class="end-stat">
+          <div class="end-stat-val" id="end-best-streak">0</div>
+          <div class="end-stat-lbl">Best Streak</div>
+        </div>
+
+        <!-- Extra points earned from streak bonuses -->
+        <div class="end-stat">
+          <div class="end-stat-val" id="end-bonus">+0</div>
+          <div class="end-stat-lbl">Bonus Pts</div>
+        </div>
+      </div>
+
+      <!-- Button to reset everything and play again -->
+      <button class="play-again-btn" onclick="restartGame()">🚀 Play Again!</button>
+    </div>
+  </div>
+
+  <!-- Loads the JavaScript file that makes the whole game work — always last so the
+       HTML is ready before the script tries to find things on the page -->
+  <script src="script.js"></script>
+</body>
+</html>

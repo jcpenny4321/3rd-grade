@@ -1,0 +1,615 @@
+/* RESET: Makes every element calculate its size the same way, and removes all default spacing */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* COLOUR PALETTE: Stores all the colours and shapes we use so we can reuse them easily */
+:root {
+  --orange: #FF6B2B;
+  --orange-dark: #E55520;
+  --yellow: #FFD23F;
+  --yellow-dark: #F0BB00;
+  --red: #FF3D3D;
+  --red-dark: #D42B2B;
+  --green: #2ECC71;
+  --green-dark: #27AE60;
+  --bg: #FFF5E6;        /* main page background colour */
+  --bg2: #FFECD0;       /* slightly darker background for cards */
+  --white: #FFFFFF;
+  --ink: #2D1A00;       /* dark brown for main text */
+  --ink2: #6B3F00;      /* lighter brown for label text */
+  --calc-bg: #2D1A00;   /* dark calculator casing colour */
+  --calc-screen: #1a380a; /* dark green calculator screen colour */
+  --radius: 20px;       /* how rounded the card corners are */
+  --shadow: 0 6px 0 rgba(0,0,0,0.18); /* the shadow under cards */
+}
+
+/* PAGE BODY: Centres everything on the page and paints a soft colourful background */
+body {
+  font-family: 'Nunito Sans', sans-serif;
+  background: var(--bg);
+  min-height: 100vh; /* at least fills the whole screen height */
+  display: flex; flex-direction: column; align-items: center;
+  padding: 1rem;
+  /* three soft glowing circles in the background */
+  background-image:
+    radial-gradient(circle at 15% 20%, rgba(255,210,63,0.25) 0%, transparent 40%),
+    radial-gradient(circle at 85% 80%, rgba(255,107,43,0.18) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, rgba(255,61,61,0.08) 0%, transparent 60%);
+  overflow-x: hidden; /* stops a horizontal scrollbar from appearing */
+}
+
+/* STAR CONTAINER: An invisible full-screen box that holds the floating background stars */
+.stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+
+/* INDIVIDUAL STAR: Each background star is mostly see-through and slowly floats up and down */
+.star {
+  position: absolute;
+  font-size: 1.4rem;
+  opacity: 0.12; /* very faint so it doesn't distract */
+  animation: floatStar 8s ease-in-out infinite;
+}
+
+/* FLOAT ANIMATION: Makes each star gently drift upward and spin, then come back down */
+@keyframes floatStar {
+  0%,100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-18px) rotate(20deg); }
+}
+
+/* APP WRAPPER: Keeps the whole game centred and stops it from getting too wide on big screens */
+.app { position: relative; z-index: 1; width: 100%; max-width: 480px; }
+
+/* ── HEADER ── */
+/* HEADER: Centres the title text and plays a bouncy pop-in animation when the page loads */
+.header {
+  text-align: center; margin-bottom: 1rem;
+  animation: bounceIn 0.6s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+/* BOUNCE-IN ANIMATION: The element starts small and invisible, then bounces into full size */
+@keyframes bounceIn {
+  from { opacity: 0; transform: scale(0.7) translateY(-20px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* LOGO TEXT: The big game title — bold, orange, with a shadow to make it pop */
+.logo {
+  font-family: 'Nunito', sans-serif;
+  font-size: clamp(1.8rem, 6vw, 2.4rem); /* scales with screen size */
+  font-weight: 900;
+  color: var(--orange);
+  text-shadow: 3px 3px 0 var(--orange-dark), 0 0 30px rgba(255,107,43,0.3);
+  letter-spacing: -0.02em;
+}
+
+/* LOGO HIGHLIGHT: Makes certain words inside the logo appear in yellow */
+.logo span { color: var(--yellow-dark); }
+
+/* ── TABLE SELECTOR ── */
+/* SELECTOR CARD: The white box where you pick which times tables to practice */
+.selector-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 1rem 1rem 0.75rem;
+  box-shadow: var(--shadow);
+  margin-bottom: 0.75rem;
+  animation: slideUp 0.5s 0.1s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+/* SLIDE-UP ANIMATION: Elements start invisible and slightly below, then slide up into place */
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* SELECTOR LABEL: The small uppercase text that says "CHOOSE YOUR TABLES" */
+.selector-label {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 800; font-size: 0.8rem;
+  color: var(--ink2); letter-spacing: 0.12em; text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+/* TABLE GRID: Arranges the number buttons (1–12) in 6 equal columns */
+.table-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 0.35rem;
+  margin-bottom: 0.6rem;
+}
+
+/* TABLE BUTTON: Each numbered square you can tap to turn a times table on or off */
+.tbl-btn {
+  background: var(--bg2); border: 2.5px solid transparent;
+  border-radius: 10px; padding: 0.45rem 0;
+  font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 1rem;
+  color: var(--ink); cursor: pointer;
+  transition: all 0.12s; user-select: none; /* no text highlight when clicking */
+}
+
+/* TABLE BUTTON HOVER: Turns yellow and gets slightly bigger when you hover over it */
+.tbl-btn:hover { background: var(--yellow); transform: scale(1.08); }
+
+/* ACTIVE TABLE BUTTON: Turns orange when that times table is switched ON */
+.tbl-btn.active {
+  background: var(--orange); color: var(--white);
+  border-color: var(--orange-dark);
+  box-shadow: 0 3px 0 var(--orange-dark); /* little 3D shadow underneath */
+  transform: translateY(-1px); /* pops up slightly */
+}
+
+/* SELECTOR ACTIONS ROW: Lays the "All", "Clear", and "Hard" buttons side by side */
+.selector-actions { display: flex; gap: 0.5rem; }
+
+/* SMALL ACTION BUTTON: A simple outlined button for "All", "Clear", and "Hard" */
+.link-btn {
+  flex: 1; background: none; border: 2px solid var(--bg2);
+  border-radius: 10px; padding: 0.35rem;
+  font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.78rem;
+  color: var(--ink2); cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+/* SMALL BUTTON HOVER: Fills with a soft background and turns orange text on hover */
+.link-btn:hover { background: var(--bg2); color: var(--orange); }
+
+/* ── STATS ROW ── */
+/* STATS ROW: Lays the score, streak, and correct count badges side by side */
+.stats-row {
+  display: flex; gap: 0.5rem; margin-bottom: 0.75rem;
+  animation: slideUp 0.5s 0.2s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+/* STAT BADGE: Each individual white rounded box showing one number (score, streak, etc.) */
+.stat-pill {
+  flex: 1; background: var(--white);
+  border-radius: 14px; padding: 0.5rem 0.25rem;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+/* STAT NUMBER: The big orange number inside a stat badge */
+.stat-val {
+  font-family: 'Nunito', sans-serif; font-weight: 900;
+  font-size: 1.3rem; color: var(--orange);
+  line-height: 1;
+}
+
+/* STAT LABEL: The tiny text underneath the number explaining what it means */
+.stat-lbl {
+  font-size: 0.62rem; font-weight: 700; color: var(--ink2);
+  letter-spacing: 0.08em; text-transform: uppercase; margin-top: 0.1rem;
+}
+
+/* STREAK BADGE: The streak badge gets a special orange-to-yellow gradient background */
+.streak-pill { background: linear-gradient(135deg, #FF6B2B, #FFD23F); }
+
+/* STREAK TEXT: Makes the text inside the streak badge white so it's readable on the gradient */
+.streak-pill .stat-val, .streak-pill .stat-lbl { color: var(--white); }
+
+/* ── PROGRESS BAR ── */
+/* PROGRESS BAR TRACK: The white bar that sits behind the coloured fill */
+.progress-wrap {
+  background: var(--white); border-radius: 99px;
+  height: 14px; margin-bottom: 0.75rem;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.08); /* sunken look */
+  overflow: hidden;
+  animation: slideUp 0.5s 0.25s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+/* PROGRESS BAR FILL: The orange-to-yellow stripe that grows as you answer questions */
+.progress-bar {
+  height: 100%; border-radius: 99px;
+  background: linear-gradient(90deg, var(--orange), var(--yellow));
+  transition: width 0.5s cubic-bezier(0.34,1.56,0.64,1); /* grows with a springy bounce */
+  box-shadow: 0 0 10px rgba(255,107,43,0.5); /* glowing edge */
+  position: relative;
+}
+
+/* PROGRESS BAR TIP: A small bright dot on the leading edge of the progress bar */
+.progress-bar::after {
+  content: '';
+  position: absolute; right: 0; top: 0; bottom: 0; width: 6px;
+  background: rgba(255,255,255,0.5); border-radius: 99px;
+}
+
+/* ── MAIN GAME CARD ── */
+/* GAME CARD: The main white card that holds the question, calculator, and answer banner */
+.game-card {
+  background: var(--white);
+  border-radius: var(--radius);
+  overflow: hidden; /* keeps child elements inside the rounded corners */
+  box-shadow: var(--shadow), 0 12px 40px rgba(255,107,43,0.12);
+  animation: slideUp 0.5s 0.3s cubic-bezier(0.16,1,0.3,1) both;
+}
+
+/* QUESTION AREA: The orange section at the top of the card that shows the maths question */
+.problem-area {
+  background: linear-gradient(135deg, #FF6B2B 0%, #FF9A3C 100%);
+  padding: 1.2rem 1.5rem 1rem;
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+  position: relative; overflow: hidden;
+}
+
+/* DECORATIVE CIRCLE: A faint white circle in the corner of the question area for decoration */
+.problem-area::before {
+  content: '';
+  position: absolute; top: -30px; right: -30px;
+  width: 100px; height: 100px; border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+}
+
+/* QUESTION NUMBERS: The big white numbers in the question (e.g. "7" and "8" in "7 × 8") */
+.problem-num {
+  font-family: 'Nunito', sans-serif; font-weight: 900;
+  font-size: clamp(2.5rem, 10vw, 3.8rem); /* gets smaller on tiny screens */
+  color: var(--white);
+  text-shadow: 3px 3px 0 rgba(0,0,0,0.15);
+  line-height: 1;
+}
+
+/* MULTIPLY SIGN: The × symbol between the two numbers, slightly see-through */
+.problem-op {
+  font-family: 'Nunito', sans-serif; font-weight: 900;
+  font-size: clamp(2rem, 8vw, 3rem);
+  color: rgba(255,255,255,0.8);
+}
+
+/* EQUALS SIGN: The = sign, even more faded than the × sign */
+.problem-eq { color: rgba(255,255,255,0.6); }
+
+/* ── CALCULATOR ── */
+/* CALCULATOR BODY: The dark brown section that looks like a retro calculator casing */
+.calculator {
+  background: var(--calc-bg);
+  padding: 1rem;
+}
+
+/* CALCULATOR SCREEN: The dark green display box where your typed answer appears */
+.calc-screen {
+  background: #0f2206;
+  border-radius: 12px;
+  padding: 0.6rem 1rem;
+  margin-bottom: 0.75rem;
+  min-height: 60px;
+  display: flex; align-items: center; justify-content: flex-end; /* numbers sit on the right */
+  position: relative;
+  border: 2px solid #1a380a;
+  box-shadow: inset 0 3px 8px rgba(0,0,0,0.4); /* makes it look sunken */
+}
+
+/* SCREEN DIGITS: The glowing green numbers you've typed, like an old calculator */
+.screen-value {
+  font-family: 'Nunito', sans-serif; font-weight: 900;
+  font-size: 2.2rem; color: #7dff4f; /* bright neon green */
+  text-shadow: 0 0 12px rgba(125,255,79,0.5); /* green glow effect */
+  letter-spacing: 0.05em;
+  min-width: 2ch; text-align: right;
+  transition: color 0.15s;
+}
+
+/* CORRECT DIGIT COLOUR: Keeps the digits green when the answer is right */
+.screen-value.correct { color: #7dff4f; }
+
+/* WRONG DIGIT COLOUR: Turns the digits red when the answer is wrong */
+.screen-value.wrong   { color: #ff5555; }
+
+/* BLINKING CURSOR: The little vertical line that blinks like a typing cursor */
+.screen-cursor {
+  width: 3px; height: 2rem; background: #7dff4f;
+  margin-left: 4px; border-radius: 2px;
+  animation: blink 1s step-end infinite;
+}
+
+/* BLINK ANIMATION: Makes the cursor flash on and off once per second */
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+/* FEEDBACK TEXT: The small message inside the screen (e.g. "+5 streak bonus!"), hidden by default */
+.feedback-text {
+  position: absolute; left: 0.8rem;
+  font-family: 'Nunito', sans-serif; font-weight: 800;
+  font-size: 0.78rem; color: #7dff4f;
+  opacity: 0; transition: opacity 0.2s; /* invisible until needed */
+}
+
+/* FEEDBACK TEXT VISIBLE: Makes the feedback message appear */
+.feedback-text.show { opacity: 1; }
+
+/* FEEDBACK TEXT WRONG: Turns the feedback message red for wrong answers */
+.feedback-text.wrong { color: #ff7777; }
+
+/* BUTTON GRID: Arranges the number pad buttons in 3 equal columns */
+.calc-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+/* CALCULATOR BUTTON: Each brown number button with a thick shadow to look 3D */
+.calc-btn {
+  background: #4a3010;
+  border: none; border-radius: 14px;
+  padding: 0.9rem 0;
+  font-family: 'Nunito', sans-serif; font-weight: 800;
+  font-size: 1.5rem; color: var(--yellow);
+  cursor: pointer;
+  box-shadow: 0 5px 0 #2a1a00; /* thick bottom shadow = 3D effect */
+  transition: transform 0.08s, box-shadow 0.08s, background 0.1s;
+  user-select: none; -webkit-tap-highlight-color: transparent;
+  position: relative; overflow: hidden;
+}
+
+/* BUTTON HOVER: Gets a little brighter when you hover over it */
+.calc-btn:hover { background: #6a4520; }
+
+/* BUTTON PRESSED: Moves down and loses its shadow to look like it's being pushed in */
+.calc-btn:active, .calc-btn.pressed {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 #2a1a00;
+}
+
+/* CLEAR BUTTON: The backspace button is red to show it deletes something */
+.calc-btn.btn-clear {
+  background: #8B2020; color: #FFB3B3;
+  box-shadow: 0 5px 0 #5a1010;
+}
+
+/* CLEAR BUTTON HOVER: Gets slightly brighter red on hover */
+.calc-btn.btn-clear:hover { background: #aa2828; }
+
+/* ENTER BUTTON: The green submit button for checking your answer */
+.calc-btn.btn-enter {
+  background: var(--green); color: var(--white);
+  box-shadow: 0 5px 0 var(--green-dark);
+  font-size: 1.2rem;
+}
+
+/* ENTER BUTTON HOVER: Gets a lighter shade of green on hover */
+.calc-btn.btn-enter:hover { background: #34d679; }
+
+/* ZERO BUTTON: The "0" button is twice as wide as the others */
+.calc-btn.btn-zero { grid-column: span 2; }
+
+/* RIPPLE EFFECT: The circular splash animation when you tap a button */
+.ripple {
+  position: absolute; border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  transform: scale(0);
+  animation: rippleAnim 0.4s ease-out forwards;
+  pointer-events: none;
+}
+
+/* RIPPLE ANIMATION: The circle grows outward and fades away */
+@keyframes rippleAnim {
+  to { transform: scale(4); opacity: 0; }
+}
+
+/* ── FEEDBACK BANNER ── */
+/* ANSWER BANNER: The message bar below the calculator ("Type your answer and press Enter!") */
+.answer-banner {
+  padding: 0.7rem 1rem;
+  text-align: center;
+  font-family: 'Nunito', sans-serif; font-weight: 800;
+  font-size: 1rem; min-height: 46px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s, color 0.2s;
+  background: var(--bg2); color: var(--ink2);
+}
+
+/* CORRECT BANNER: Turns green when you get the answer right */
+.answer-banner.correct { background: #d4f5e2; color: #1a6b40; }
+
+/* WRONG BANNER: Turns red when you get the answer wrong */
+.answer-banner.wrong   { background: #ffe0e0; color: #8B0000; }
+
+/* ── SHAKE ── */
+/* SHAKE ANIMATION: Rapidly wobbles left and right to show a wrong answer */
+@keyframes shake {
+  0%,100%{transform:translateX(0)}
+  20%{transform:translateX(-8px)}
+  40%{transform:translateX(8px)}
+  60%{transform:translateX(-6px)}
+  80%{transform:translateX(6px)}
+}
+
+/* SHAKE CLASS: Attach this to any element to make it shake */
+.shake { animation: shake 0.35s ease both; }
+
+/* ── CONFETTI & END SCREEN ── */
+/* END OVERLAY: A dark semi-transparent cover that appears over everything when the game ends */
+.end-overlay {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(45,26,0,0.75);
+  align-items: center; justify-content: center;
+}
+
+/* END OVERLAY VISIBLE: Shows the overlay and fades it in */
+.end-overlay.show { display: flex; animation: fadeIn 0.4s both; }
+
+/* FADE-IN ANIMATION: Something goes from invisible to fully visible */
+@keyframes fadeIn { from{opacity:0}to{opacity:1} }
+
+/* END CARD: The white pop-up box in the centre of the screen showing your final results */
+.end-card {
+  background: var(--white);
+  border-radius: 24px;
+  padding: 2rem 2rem 1.5rem;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  max-width: 340px; width: 90%;
+  animation: popUp 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+/* POP-UP ANIMATION: The card zooms in from tiny to full size */
+@keyframes popUp { from{transform:scale(0.5)}to{transform:scale(1)} }
+
+/* END EMOJI: The big trophy or celebration emoji at the top of the results card */
+.end-emoji { font-size: 3.5rem; margin-bottom: 0.5rem; }
+
+/* END TITLE: The big orange heading like "Perfect Score!" or "Keep Practicing!" */
+.end-title {
+  font-family: 'Nunito', sans-serif; font-weight: 900;
+  font-size: 1.8rem; color: var(--orange);
+  text-shadow: 2px 2px 0 var(--orange-dark);
+  margin-bottom: 0.25rem;
+}
+
+/* STAR RATING: The row of ⭐ stars showing how well you did */
+.end-stars { font-size: 2rem; margin: 0.5rem 0; letter-spacing: 0.1em; }
+
+/* END STATS GRID: Arranges your final stats (score, correct, streak, bonus) in a 2×2 grid */
+.end-stats {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 0.5rem; margin: 1rem 0;
+}
+
+/* STAT BOX: Each individual beige box holding one final result */
+.end-stat {
+  background: var(--bg2); border-radius: 12px; padding: 0.6rem;
+}
+
+/* STAT NUMBER: The big orange number inside each stat box */
+.end-stat-val {
+  font-family: 'Nunito', sans-serif; font-weight: 900;
+  font-size: 1.5rem; color: var(--orange);
+}
+
+/* STAT LABEL: The small text underneath the number explaining what it is */
+.end-stat-lbl { font-size: 0.7rem; color: var(--ink2); font-weight: 700; }
+
+/* PLAY AGAIN BUTTON: The big orange button at the bottom of the results card */
+.play-again-btn {
+  width: 100%; padding: 1rem;
+  background: linear-gradient(135deg, var(--orange), #FF9A3C);
+  border: none; border-radius: 14px;
+  font-family: 'Nunito', sans-serif; font-weight: 900;
+  font-size: 1.2rem; color: var(--white);
+  cursor: pointer;
+  box-shadow: 0 5px 0 var(--orange-dark);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+/* PLAY AGAIN BUTTON PRESSED: Pushes down like a real button when you click it */
+.play-again-btn:active { transform: translateY(4px); box-shadow: 0 1px 0 var(--orange-dark); }
+
+/* CONFETTI CANVAS: An invisible full-screen layer on top for drawing the falling confetti */
+#confetti-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 199; }
+
+/* ── INCORRECT REVIEW MODAL ── */
+/* REVIEW OVERLAY: A dark blurry backdrop that appears when you get an answer wrong */
+.review-overlay {
+  display: none; position: fixed; inset: 0; z-index: 300;
+  background: rgba(45,26,0,0.8);
+  align-items: center; justify-content: center;
+  backdrop-filter: blur(4px); /* blurs what's behind it */
+  -webkit-backdrop-filter: blur(4px); /* same thing for Safari */
+}
+
+/* REVIEW OVERLAY VISIBLE: Shows the overlay with a fade-in */
+.review-overlay.show {
+  display: flex;
+  animation: fadeIn 0.3s both;
+}
+
+/* REVIEW MODAL CARD: The white pop-up box showing what the correct answer was */
+.review-modal {
+  background: var(--white);
+  border-radius: 24px;
+  padding: 2rem 2rem 1.5rem;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  max-width: 380px; width: 90%;
+  animation: popUp 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+/* REVIEW HEADER: The red "INCORRECT ANSWER" text at the top of the pop-up */
+.review-header {
+  font-family: 'Nunito', sans-serif; font-weight: 900;
+  font-size: 1.2rem; color: var(--red);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  margin-bottom: 1rem;
+}
+
+/* REVIEW QUESTION: The big dark text showing which question you got wrong */
+.review-question {
+  font-family: 'Nunito', sans-serif; font-weight: 900;
+  font-size: clamp(2rem, 8vw, 2.8rem);
+  color: var(--ink);
+  margin-bottom: 1.2rem;
+  line-height: 1.1;
+  word-wrap: break-word; /* stops long numbers from spilling outside the box */
+}
+
+/* REVIEW YOUR ANSWER ROW: The line that shows what you typed (the wrong answer) */
+.review-your-answer {
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+  margin-bottom: 1.2rem;
+}
+
+/* REVIEW LABEL: Small grey text like "You answered:" */
+.review-label {
+  font-family: 'Nunito Sans', sans-serif; font-weight: 700;
+  font-size: 0.95rem; color: var(--ink2);
+}
+
+/* WRONG ANSWER BUBBLE: The red box showing the incorrect number you typed */
+.review-wrong-val {
+  font-family: 'Nunito', sans-serif; font-weight: 900;
+  font-size: 1.4rem; color: var(--red);
+  background: #ffe0e0; border-radius: 8px;
+  padding: 0.15rem 0.6rem;
+}
+
+/* CORRECT ANSWER SECTION: The column holding the label and big green correct answer */
+.review-correct-answer {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 0.3rem; margin-bottom: 1.5rem;
+}
+
+/* CORRECT ANSWER BUBBLE: The big glowing green box showing what the right answer was */
+.review-correct-val {
+  font-family: 'Nunito', sans-serif; font-weight: 900;
+  font-size: clamp(2.5rem, 10vw, 3.5rem);
+  color: var(--green-dark);
+  background: #d4f5e2;
+  border: 3px solid var(--green);
+  border-radius: 14px;
+  padding: 0.3rem 1.2rem;
+  box-shadow: 0 0 20px rgba(46,204,113,0.25); /* soft green glow */
+  line-height: 1.2;
+}
+
+/* CONTINUE BUTTON: The orange button you press to move on to the next question */
+.review-continue-btn {
+  width: 100%; padding: 1rem;
+  background: linear-gradient(135deg, var(--orange), #FF9A3C);
+  border: none; border-radius: 14px;
+  font-family: 'Nunito', sans-serif; font-weight: 900;
+  font-size: 1.2rem; color: var(--white);
+  cursor: pointer;
+  box-shadow: 0 5px 0 var(--orange-dark);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+/* CONTINUE BUTTON PRESSED: Pushes down like a real button when you click it */
+.review-continue-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 var(--orange-dark);
+}
+
+/* CONTINUE BUTTON FOCUS RING: Shows a visible orange outline when using a keyboard to navigate */
+.review-continue-btn:focus-visible {
+  outline: 3px solid var(--orange);
+  outline-offset: 3px;
+}
+
+/* ── TIMER ROW ── */
+/* TOP INFO ROW: The strip at the very top of the game card showing the question number */
+.timer-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.5rem 1rem 0;
+  font-family: 'Nunito', sans-serif; font-weight: 700;
+  font-size: 0.72rem; color: rgba(255,255,255,0.6);
+  background: linear-gradient(135deg, #FF6B2B, #FF9A3C); /* matches the question area */
+}
+
+/* QUESTION COUNTER: The "Question 3 of 15" text, slightly brighter than other text in the row */
+.q-counter { color: rgba(255,255,255,0.9); }
